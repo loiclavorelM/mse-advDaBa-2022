@@ -1,0 +1,9 @@
+*.jsonl
+*.zip
+neo4j_mount/
+target/
+__pycache__/
+*.pyc
+.env
+.idea/
+.vscode/

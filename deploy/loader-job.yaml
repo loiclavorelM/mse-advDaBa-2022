@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: neo4jtp-loader
+spec:
+  template:
+    metadata:
+      labels:
+        app: loader
+    spec:
+      containers:
+      - name: loader
+        image: exalos/neo4jtp:latest 
+        imagePullPolicy: Always   
+        env:
+          - name: NEO4J_URI
+            value: "bolt://neo4j-service:7687"
+          - name: NEO4J_USER
+            value: "neo4j"
+          - name: NEO4J_PASS
+            value: "test"
+          - name: DATA_URL
+            value: "http://vmrum.isc.heia-fr.ch/files/DBLP-Citation-network-V18.jsonl"
+          - name: MAX_NODES
+            value: "-1"
+          - name: BATCH_SIZE
+            value: "500"
+        resources:
+          limits:
+            memory: "512Mi" 
+            cpu: "1"
+      restartPolicy: OnFailure 
+  backoffLimit: 4

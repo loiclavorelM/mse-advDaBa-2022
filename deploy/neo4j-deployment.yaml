@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: neo4j-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: neo4j
+  template:
+    metadata:
+      labels:
+        app: neo4j
+    spec:
+      containers:
+      - name: neo4j
+        image: neo4j:4.4.15-community
+        env:
+          - name: NEO4J_AUTH
+            value: "neo4j/test"
+          - name: NEO4J_dbms_memory_heap_max__size
+            value: "1500m"
+          - name: NEO4J_dbms_memory_pagecache_size
+            value: "1G"
+        resources:
+          limits:
+            memory: "3Gi"
+            cpu: "2"
+        ports:
+          - containerPort: 7474
+          - containerPort: 7687
+        volumeMounts:
+          - name: neo4j-data
+            mountPath: /data
+      volumes:
+        - name: neo4j-data
+          persistentVolumeClaim:
+            claimName: neo4j-data-pvc

@@ -1,3 +1,3 @@
 #  #!/usr/bin/sh
 
-docker build . -t neo4jtp
+docker build ./loader/ -t neo4jtp
