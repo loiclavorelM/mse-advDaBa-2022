@@ -25,6 +25,8 @@ spec:
             value: "-1"
           - name: BATCH_SIZE
             value: "500"
+          - name: RESUME_BYTES
+            value: "3787000000"
         resources:
           limits:
             memory: "512Mi" 

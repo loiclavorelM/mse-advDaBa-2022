@@ -4,11 +4,12 @@ import requests
 
 
 class DataLoader:
-    def __init__(self, url, max_retries=10, backoff_base=10, request_timeout=60):
+    def __init__(self, url, max_retries=10, backoff_base=10, request_timeout=60, resume_bytes=0):
         self.url = url
         self.max_retries = max_retries
         self.backoff_base = backoff_base
         self.request_timeout = request_timeout
+        self.resume_bytes = resume_bytes
 
     def clean_article(self, raw_data):
         return {
@@ -24,8 +25,14 @@ class DataLoader:
         }
 
     def stream_data(self):
-        byte_offset = 0
+        byte_offset = self.resume_bytes
         attempt = 0
+        if byte_offset > 0:
+            print(
+                f"[STREAM] RESUME_BYTES={byte_offset} → on saute le début du fichier "
+                f"(supposé déjà ingéré, MERGE protège quand même).",
+                flush=True,
+            )
 
         while True:
             try:

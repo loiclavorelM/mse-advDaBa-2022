@@ -14,12 +14,14 @@ class App:
         self.batch_size = int(os.environ.get('BATCH_SIZE', '500'))
         self.max_retries = int(os.environ.get('MAX_RETRIES', '10'))
         self.retry_backoff = int(os.environ.get('RETRY_BACKOFF', '10'))
+        self.resume_bytes = int(os.environ.get('RESUME_BYTES', '0'))
 
         self.db = NeoJ4(self.neo4j_uri, self.neo4j_user, self.neo4j_password)
         self.loader = DataLoader(
             self.data_url,
             max_retries=self.max_retries,
             backoff_base=self.retry_backoff,
+            resume_bytes=self.resume_bytes,
         )
 
     def run(self):

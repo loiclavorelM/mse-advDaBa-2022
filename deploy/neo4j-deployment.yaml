@@ -4,6 +4,8 @@ metadata:
   name: neo4j-deployment
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: neo4j
@@ -18,10 +20,12 @@ spec:
         env:
           - name: NEO4J_AUTH
             value: "neo4j/test"
-          - name: NEO4J_dbms_memory_heap_max__size
-            value: "1500m"
-          - name: NEO4J_dbms_memory_pagecache_size
+          - name: NEO4J_dbms_memory_heap_initial__size
             value: "1G"
+          - name: NEO4J_dbms_memory_heap_max__size
+            value: "1G"
+          - name: NEO4J_dbms_memory_pagecache_size
+            value: "1800m"
         resources:
           limits:
             memory: "3Gi"
