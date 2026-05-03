@@ -10,9 +10,9 @@
 
 Afin de permettre la vérification des données et de l'infrastructure, voici les identifiants liés à notre déploiement sur le cluster de l'école :
 
-* **Namespace :** `...`
-* **ID du Pod Neo4j :** `...`
-* **ID du Pod Loader (Logs) :** `...`
+* **Namespace :** `tay-lav-adv-daba-26`
+* **ID du Pod Neo4j :** `neo4j-deployment-5c8f587887-578fv`
+* **ID du Pod Loader (Logs) :** `neo4jtp-loader-gstm9`
 * **Credentials Neo4j :** 
     * Utilisateur : `neo4j`
     * Mot de passe : `test`

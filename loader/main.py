@@ -30,19 +30,24 @@ class App:
             self.db.statistics()
 
             batch = []
+            batches_inserted = 0
             for article in self.loader.stream_data():
                 batch.append(article)
                 articles_loaded += 1
 
                 if articles_loaded >= self.max_nodes and self.max_nodes != -1:
                     break
-                    
+
                 if len(batch) >= self.batch_size:
                     self.db.insert_batch(batch)
+                    batches_inserted += 1
                     batch = []
+                    elapsed = max(int(time.time() - start_time), 1)
+                    rate = articles_loaded // elapsed
+                    print(f"[BATCH #{batches_inserted}] {articles_loaded} articles | {elapsed}s écoulés | {rate} articles/s", flush=True)
 
                 if articles_loaded % 100000 == 0 :
-                    print(f"[PROGRESS] {articles_loaded} articles insérés... Temps écoulé: {int(time.time() - start_time)}s")
+                    print(f"[PROGRESS] {articles_loaded} articles insérés... Temps écoulé: {int(time.time() - start_time)}s", flush=True)
         
                     
             if batch:
