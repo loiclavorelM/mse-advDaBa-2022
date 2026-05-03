@@ -12,9 +12,15 @@ class App:
         self.data_url = os.environ.get('DATA_URL', 'http://vmrum.isc.heia-fr.ch/files/DBLP-Citation-network-V18.jsonl')
         self.max_nodes = int(os.environ.get('MAX_NODES', '-1'))
         self.batch_size = int(os.environ.get('BATCH_SIZE', '500'))
-        
+        self.max_retries = int(os.environ.get('MAX_RETRIES', '10'))
+        self.retry_backoff = int(os.environ.get('RETRY_BACKOFF', '10'))
+
         self.db = NeoJ4(self.neo4j_uri, self.neo4j_user, self.neo4j_password)
-        self.loader = DataLoader(self.data_url)
+        self.loader = DataLoader(
+            self.data_url,
+            max_retries=self.max_retries,
+            backoff_base=self.retry_backoff,
+        )
 
     def run(self):
         print("-"*40)
