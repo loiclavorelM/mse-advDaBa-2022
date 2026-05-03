@@ -25,7 +25,7 @@ spec:
           - name: NEO4J_dbms_memory_heap_max__size
             value: "1G"
           - name: NEO4J_dbms_memory_pagecache_size
-            value: "1800m"
+            value: "1500m"
         resources:
           limits:
             memory: "3Gi"

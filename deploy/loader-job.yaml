@@ -26,7 +26,11 @@ spec:
           - name: BATCH_SIZE
             value: "500"
           - name: RESUME_BYTES
-            value: "3787000000"
+            value: "3787700000"
+          - name: RETRY_BACKOFF
+            value: "1"
+          - name: MAX_RETRIES
+            value: "100"
         resources:
           limits:
             memory: "512Mi" 

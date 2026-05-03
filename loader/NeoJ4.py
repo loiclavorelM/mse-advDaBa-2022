@@ -9,19 +9,21 @@ class NeoJ4:
     MERGE (a:Article {_id: row._id})
       ON CREATE SET a.title = row.title
       ON MATCH  SET a.title = coalesce(a.title, row.title)
-    WITH a, row
+    WITH a, row, exists((:Author)-[:AUTHORED]->(a)) AS alreadyDone
     CALL {
-      WITH a, row
+      WITH a, row, alreadyDone
+      WITH a, row WHERE NOT alreadyDone
       UNWIND row.authors AS author
       MERGE (p:Author {_id: author._id}) ON CREATE SET p.name = author.name
-      MERGE (p)-[:AUTHORED]->(a)
+      CREATE (p)-[:AUTHORED]->(a)
     }
-    WITH a, row
+    WITH a, row, alreadyDone
     CALL {
-      WITH a, row
+      WITH a, row, alreadyDone
+      WITH a, row WHERE NOT alreadyDone
       UNWIND row.references AS refId
       MERGE (b:Article {_id: refId})
-      MERGE (a)-[:CITES]->(b)
+      CREATE (a)-[:CITES]->(b)
     }
     """
 
