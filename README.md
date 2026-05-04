@@ -113,9 +113,9 @@ Récupéré via `cypher-shell` directement sur le pod Neo4j :
 
 | Compteur | Valeur |
 |---|---|
-| Articles (`N`) | 5 034 312 |
-| Authors (`K`) | 2 335 348 |
-| **Total nodes (`N+K`)** | **7 369 660** |
+| Articles (`N`) |  5 126 539 |
+| Authors (`K`) | 2 393 741 |
+| **Total nodes (`N+K`)** | **7 520 280** |
 
 > Note : ce snapshot a été pris avant la fin du loader. La valeur finale est dans le bloc `[DATABASE STATE]` à la fin des logs du pod loader, qui s'imprime quand le Job se termine (ou via `cypher-shell` une fois fini).
 
@@ -135,16 +135,17 @@ Le chargement s'est fait en **deux sessions distinctes** à cause de redéploiem
 Visible dans `kubectl logs neo4jtp-loader-vtwn2` :
 
 ```
-[START] 2026-05-03T19:33:14.777006+00:00 – Source: http://vmrum.isc.heia-fr.ch/files/...
+[START] 2026-05-03T19:33:14.777006+00:00 – Source: http://vmrum.isc.heia-fr.ch/files/DBLP-Citation-network-V18.jsonl
 [CONFIG] MAX_NODES=-1, BATCH_SIZE=500
+[INFO] Contraintes d'unicité créées.
 [COUNT] Articles=3880985 Authors=1652080 CITES=17540159 AUTHORED=4939408
 ...
-[BATCH #2805] 1402500 articles | 55327s écoulés | 25 articles/s
+[BATCH #3095] 1547500 articles | 76606s écoulés | 20 articles/s
 ```
 
 * **Start** : 2026-05-03 19:33:14 UTC
-* **Articles processés à 12:15 UTC** : 1 402 500 (delta de cette session)
-* **Durée écoulée à 12:15 UTC** : 55 327 s (~15h 22min)
+* **Articles processés à 18:50 UTC** : 1 547 500 (delta de cette session)
+* **Durée écoulée à 18:50 UTC** : 76 606s s (~21h 15min)
 * **End / Duration finale** : à extraire du bloc `[END] / [DURATION]` une fois le `finally` du loader exécuté
 
 #### Wall-clock total estimé
@@ -230,9 +231,13 @@ On s'en est rendu compte un peu tard, mais il y a plusieurs pistes qui restent d
 
 * **Plugin APOC + `apoc.periodic.iterate(parallel: true)`** : APOC permet de splitter une insertion en plusieurs sous-transactions parallèles côté serveur. Il suffit d'ajouter `NEO4JLABS_PLUGINS=["apoc"]` dans le deployment. Combiné à la dédup, ça pourrait utiliser les 2 cœurs CPU. Mais ça ajoute de la complexité et on aurait dû le mettre en place plus tôt.
 
+
+#### 5.5.1 Changement de paradigme : Du Streaming au Prétraitement
+Notre architecture actuelle repose sur un choix de conception : l'ingestion en flux continu (HTTP streaming). Ce choix présente l'avantage majeur de ne nécessiter aucun espace de stockage intermédiaire sur le cluster pour les 18 Go du dataset. En contrepartie, cette lecture "à la volée" nous contraint à traiter les données dans leur ordre d'arrivée, interdisant tout prétraitement global. Si nous acceptions de modifier ce paradigme pour télécharger l'intégralité du fichier en local avant de lancer l'ingestion, cela débloquerait plusieurs optimisations structurelles majeures :
+
 * **Tri Chronologique** : Ordonner le dataset par date de publication (du plus ancien au plus récent) garantirait que les nœuds référencés existent déjà lors de la création des relations CITES, limitant ainsi la création de coquille vide et les Cache Misses lors de la mise à jour différée des nœuds.
 
-* **Ingestion multi-passes (Two-Pass Load)** : Séparer la création des entités (Articles, Auteurs) de la création des arêtes (CITES, AUTHORED) en deux lectures distinctes du fichier permettrait peut-être d'alléger considérablement la charge pesant sur le Heap.
+* **Ingestion multi-passes** : Séparer la création des entités (Articles, Auteurs) de la création des arêtes (CITES, AUTHORED) en deux lectures distinctes du fichier permettrait peut-être d'alléger considérablement la charge pesant sur le Heap.
 
 * **Réduction de l'empreinte de l'Index B-Tree** : Remplacer les clés primaires alphanumériques (_id au format String) par des entiers séquentiels, permettant de conserver une plus grande partie de la topologie en mémoire vive.
 ---
